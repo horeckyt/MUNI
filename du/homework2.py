@@ -3,84 +3,81 @@
 from random import randint
 
 
-def print_board(mat, mat_thr, pat, pat_thr, length):
-    print("Mat: ", end="")
-    for i in mat_thr:
-        print(i, end=", ")
-    print("Pat: ", end="")
-    for j in pat_thr:
-        print(j, end=", ")
-    print()
+class Player:
+    def __init__(self, name):
+        self.position = 0
+        self.thr = []
+        self.name = name
 
-    print("home", end=" ")
-    for k in range(length):
-        if k == mat-1:
-            print("M", end=" ")
-        else:
-            print(".", end=" ")
-    print("finish")
-    print("home", end=" ")
-    for l in range(length):
-        if l == pat-1:
-            print("P", end=" ")
-        else:
-            print(".", end=" ")
-    print("finish")
-    print()
+    def reset_pos(self):
+        self.position = 0
 
+    def reset_thr(self):
+        self.thr = []
 
-def throws():
-    throw = randint(1, 6)
-    thr = [throw]
-
-    while throw == 6:
+    def move(self, length):
         throw = randint(1, 6)
-        thr.append(throw)
+        self.thr = [throw]
 
-    return thr
+        while throw == 6:
+            throw = randint(1, 6)
+            self.thr.append(throw)
+
+        for k in self.thr:
+            if k <= length - self.position:
+                self.position += k
+
+    def print_board(self, length):
+        print(self.name, end=": ")
+
+        for i in self.thr:
+            print(i, end=", ")
+        print("\nhome", end=" ")
+
+        for k in range(length):
+            if k == self.position - 1:
+                print(self.name[0], end=" ")
+            else:
+                print(".", end=" ")
+
+        print("finish")
+        self.reset_thr()
 
 
 def pix(length, leg, print_games):
 
-    pat_pos = 0
-    mat_pos = 0
+    mat = Player("Mat")
+    pat = Player("Pat")
 
     for i in range(leg):
         if print_games:
             print("Round", i+1)
 
-        throws_mat = throws()
+        mat.move(length)
+        if mat.position == pat.position:
+            pat.reset_pos()
 
-        for j in throws_mat:
-            if j <= length - mat_pos:
-                mat_pos += j
+        pat.move(length)
+        if pat.position == mat.position:
+            mat.reset_pos()
 
-        if mat_pos == pat_pos:
-            pat_pos = 1
-
-        throws_pat = throws()
-
-        for k in throws_pat:
-            if k <= length - pat_pos:
-                pat_pos += k
-
-        if pat_pos == mat_pos:
-            mat_pos = 1
-
-        if mat_pos == length:
+        if mat.position == length:
             if print_games:
-                print_board(mat_pos, throws_mat, pat_pos, throws_pat, length)
+                mat.print_board(length)
+                pat.print_board(length)
                 print("Mat wins!")
             return "mat"
 
-        if pat_pos == length:
+        if pat.position == length:
             if print_games:
-                print_board(mat_pos, throws_mat, pat_pos, throws_pat, length)
+                mat.print_board(length)
+                pat.print_board(length)
                 print("Pat wins!")
             return "pat"
 
         if print_games:
-            print_board(mat_pos, throws_mat, pat_pos, throws_pat, length)
+            mat.print_board(length)
+            pat.print_board(length)
 
     if print_games:
         print("It's a draw!")
@@ -100,9 +97,10 @@ def pix_analyze(length, leg, count, print_games):
     print()
     print("Stats: ")
     print("Total games: ", count)
-    print("Games won by Mat: ", mat_wins, " ({0:.01%})".format(mat_wins/count))
-    print("Games won by Pat: ", pat_wins, " ({0:.01%})".format(pat_wins/count))
-    print("Games that ended in a draw: ", draws, " ({0:.01%})".format(draws/count))
+    print("Games won by Mat: ", mat_wins, " ({0:.2%})".format(mat_wins/count))
+    print("Games won by Pat: ", pat_wins, " ({0:.2%})".format(pat_wins/count))
+    print("Games that ended in a draw: ", draws, " ({0:.2%})".format(draws/count))
 
 
 pix_analyze(20, 12, 500, False)
+# pix(20, 12, True)
